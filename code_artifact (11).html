@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مغامرة الرشاقة - أبطال الصف الرابع الابتدائي</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Cairo & Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Confetti JS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 40%, #fed7aa 100%);
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        .font-sport {
+            font-family: 'Cairo', sans-serif;
+        }
+        .kids-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 1.75rem;
+            border: 3px solid #38bdf8;
+            box-shadow: 0 12px 25px -4px rgba(14, 165, 233, 0.25);
+        }
+        .tab-btn-kid {
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+        }
+        .tab-btn-kid.active {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 10px 20px -3px rgba(2, 132, 199, 0.4);
+            border-color: #38bdf8;
+        }
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+        .animate-float {
+            animation: float-slow 3s ease-in-out infinite;
+        }
+        #gameCanvasContainer {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 4 / 5;
+            margin: 0 auto;
+        }
+        canvas {
+            touch-action: none;
+            display: block;
+        }
+    </style>
+</head>
+<body class="selection:bg-amber-400 selection:text-slate-900 pb-12">
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b-4 border-sky-300 px-4 py-3 shadow-md">
+        <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-13 h-13 p-2 rounded-2xl bg-amber-400 text-sky-900 shadow-md flex items-center justify-center text-3xl animate-bounce">
+                    🏃‍♂️
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-sky-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
+                            الصف الرابع الابتدائي
+                        </span>
+                        <span class="bg-amber-400 text-slate-800 text-[11px] font-black px-2 py-0.5 rounded-full">
+                            بدنية ممتعة
+                        </span>
+                    </div>
+                    <h1 class="text-xl md:text-2xl font-black font-sport text-sky-800">
+                        مغامرة أبطال وبطلات الرشاقة! ⚡
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Header Controls: Sound & Points -->
+            <div class="flex items-center gap-2">
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-1.5 rounded-2xl text-xs font-bold bg-sky-100 hover:bg-sky-200 border-2 border-sky-300 text-sky-700 transition flex items-center gap-1.5 shadow-sm">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
+                    <span id="soundText" class="hidden sm:inline">الصوت رائع</span>
+                </button>
+                <div class="px-3.5 py-1.5 rounded-2xl bg-amber-100 border-2 border-amber-300 flex items-center gap-2 shadow-sm">
+                    <span class="text-xl">⭐</span>
+                    <div class="text-right">
+                        <span class="text-[10px] text-amber-800 font-bold block leading-none">نجوم الرشاقة</span>
+                        <span id="globalPoints" class="font-black text-amber-600 text-lg leading-tight font-sport">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 mt-6">
+        <nav class="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-6">
+            <button onclick="switchTab('introTab')" id="btnIntro" class="tab-btn-kid active px-4 py-2.5 rounded-2xl font-black text-sm md:text-base border-2 border-sky-400 bg-white text-sky-800 flex items-center gap-2">
+                <span>📚 رحلة الرشاقة</span>
+            </button>
+            <button onclick="switchTab('gameTab')" id="btnGame" class="tab-btn-kid px-4 py-2.5 rounded-2xl font-black text-sm md:text-base border-2 border-sky-300 bg-white text-sky-800 flex items-center gap-2">
+                <span>🏃 لعبة الجري المتعرج</span>
+                <span class="bg-amber-400 text-amber-950 text-xs px-2 py-0.5 rounded-full font-black animate-pulse">العب!</span>
+            </button>
+            <button onclick="switchTab('quizTab')" id="btnQuiz" class="tab-btn-kid px-4 py-2.5 rounded-2xl font-black text-sm md:text-base border-2 border-sky-300 bg-white text-sky-800 flex items-center gap-2">
+                <span>🎯 تحدي الأذكياء</span>
+            </button>
+            <button onclick="switchTab('classifyTab')" id="btnClassify" class="tab-btn-kid px-4 py-2.5 rounded-2xl font-black text-sm md:text-base border-2 border-sky-300 bg-white text-sky-800 flex items-center gap-2">
+                <span>🧩 صندوق التصنيف</span>
+            </button>
+        </nav>
+
+        <section id="introTab" class="tab-content">
+            <!-- Warm Welcome Banner -->
+            <div class="kids-card p-6 md:p-8 mb-6 border-4 border-amber-300 relative overflow-hidden bg-gradient-to-r from-amber-50 via-white to-sky-50">
+                <div class="flex flex-col md:flex-row items-center gap-5">
+                    <div class="text-6xl md:text-7xl animate-float">
+                        🦁✨
+                    </div>
+                    <div class="text-center md:text-right">
+                        <span class="inline-block bg-amber-400 text-amber-950 text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">
+                            يا مرحباً بكم يا أذكياء وأبطال الصف الرابع! 🌟
+                        </span>
+                        <h2 class="text-2xl md:text-3xl font-black text-sky-900 mb-2">
+                            ما هي "الرَّشَاقَة" يا أصدقائي؟
+                        </h2>
+                        <p class="text-slate-700 text-base md:text-lg leading-relaxed font-bold">
+                            الرَّشَاقَة هي: <span class="text-sky-700 underline decoration-amber-400 decoration-4">«خِفَّة الحركة والتَّوافُق الحَرَكي السَّريع للجسم»</span>!
+                            وهي قدرتنا على تحريك كل الجسم أو جزء منه بنعومة وتوازن وسرعة وتغيير اتجاهنا في لمح البصر! ⚡
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Types of Agility simplified -->
+            <div class="mb-6">
+                <h3 class="text-xl font-black text-sky-900 mb-3 flex items-center gap-2">
+                    <span>✨ أنواع الرشاقة (سهلة جداً!):</span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- General Agility -->
+                    <div class="kids-card p-5 border-3 border-emerald-400 hover:scale-[1.02] transition">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-4xl p-2 rounded-2xl bg-emerald-100">🤸‍♂️</span>
+                            <div>
+                                <span class="text-xs font-extrabold text-emerald-600 block">النوع الأول</span>
+                                <h4 class="text-lg font-black text-emerald-900">١. الرشاقة العامة</h4>
+                            </div>
+                        </div>
+                        <p class="text-slate-700 text-sm leading-relaxed font-semibold">
+                            هي قدرتي كبطل على أداء حركات مختلفة في أكثر من رياضة بتصرف ذكي وسليم! (مثل: الجري والقفز والتسلق في الملعب والحديقة).
+                        </p>
+                        <div class="mt-3 py-1.5 px-3 bg-emerald-50 rounded-xl text-xs font-bold text-emerald-800 border border-emerald-200">
+                            💡 مثال: الجري السريع والقفز فوق الحواجز الصغيرة في حصة البدنية.
+                        </div>
+                    </div>
+
+                    <!-- Specific Agility -->
+                    <div class="kids-card p-5 border-3 border-amber-400 hover:scale-[1.02] transition">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-4xl p-2 rounded-2xl bg-amber-100">⚽🏀</span>
+                            <div>
+                                <span class="text-xs font-extrabold text-amber-600 block">النوع الثاني</span>
+                                <h4 class="text-lg font-black text-amber-900">٢. الرشاقة الخاصة</h4>
+                            </div>
+                        </div>
+                        <p class="text-slate-700 text-sm leading-relaxed font-semibold">
+                            هي حركات رشيقة خاصة برياضة محددة أمارسها وأحبها وتحتاج مهارة متقنة.
+                        </p>
+                        <div class="mt-3 py-1.5 px-3 bg-amber-50 rounded-xl text-xs font-bold text-amber-800 border border-amber-200">
+                            💡 مثال: مراوغة المدافعين في كرة القدم أو تفادي الخصم في كرة السلة.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Influencing Factors & Exercises -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- What affects Agility? -->
+                <div class="kids-card p-5 border-3 border-indigo-300">
+                    <h4 class="text-lg font-black text-indigo-900 mb-3 flex items-center gap-2">
+                        <span>🔍 ما الذي يؤثر في رشاقتي؟</span>
+                    </h4>
+                    <ul class="space-y-2 text-sm font-bold text-slate-700">
+                        <li class="p-2.5 rounded-xl bg-indigo-50 flex items-center gap-2">
+                            <span class="text-xl">📏</span>
+                            <span><strong>الأنماط والقياسات الجسمية:</strong> شكل وطول الجسم المناسب للحركة.</span>
+                        </li>
+                        <li class="p-2.5 rounded-xl bg-indigo-50 flex items-center gap-2">
+                            <span class="text-xl">🎂</span>
+                            <span><strong>العمر والجنس:</strong> نشاطنا وحيويتنا في مرحلة الطفولة والنمو.</span>
+                        </li>
+                        <li class="p-2.5 rounded-xl bg-red-100 text-red-900 flex items-center gap-2 border border-red-200">
+                            <span class="text-xl">🍔</span>
+                            <span><strong>الوزن الزائد:</strong> يثقل الجسم ويصعب تغيير الاتجاه بسرعة.</span>
+                        </li>
+                        <li class="p-2.5 rounded-xl bg-amber-100 text-amber-900 flex items-center gap-2 border border-amber-200">
+                            <span class="text-xl">😴</span>
+                            <span><strong>التعب والإعياء:</strong> قلة النوم والإجهاد تبطئ استجابة العضلات!</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- How to train Agility? -->
+                <div class="kids-card p-5 border-3 border-sky-300">
+                    <h4 class="text-lg font-black text-sky-900 mb-3 flex items-center gap-2">
+                        <span>🚀 كيف ننمي رشاقتنا في حصة البدنية؟</span>
+                    </h4>
+                    <div class="space-y-2.5 text-sm font-bold">
+                        <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex items-center gap-3">
+                            <span class="text-2xl">🦘</span>
+                            <div>
+                                <span class="text-sky-900 block font-black">١. الوثب في المكان مع تبادل أرجحة الرجلين</span>
+                                <span class="text-xs text-slate-600 font-semibold">يمنح الأرجل خفة وتوافقاً ممتعاً!</span>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex items-center gap-3">
+                            <span class="text-2xl">🏃‍♂️️</span>
+                            <div>
+                                <span class="text-sky-900 block font-black">٢. الجري المتعرج (بين الأقماع)</span>
+                                <span class="text-xs text-slate-600 font-semibold">الانطلاق يميناً ويساراً بسلاسة دون لمس الأقماع!</span>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex items-center gap-3">
+                            <span class="text-2xl">🔄</span>
+                            <div>
+                                <span class="text-sky-900 block font-black">٣. الجري مع تغيير الاتجاه السريع</span>
+                                <span class="text-xs text-slate-600 font-semibold">التوقف المفاجئ والانطلاق في اتجاه آخر بذكاء!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Big Action Button -->
+            <div class="text-center mt-4">
+                <button onclick="switchTab('gameTab')" class="px-8 py-4 rounded-3xl font-black text-lg bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-slate-900 shadow-xl shadow-amber-300/60 hover:scale-105 active:scale-95 transition-all">
+                    <span>🎮 هيا نبدأ لعبة الجري المتعرج الممتعة!</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="gameTab" class="tab-content hidden">
+            <div class="kids-card p-4 md:p-6 mb-6 max-w-2xl mx-auto border-4 border-sky-400">
+                <!-- Game Top Info -->
+                <div class="flex items-center justify-between mb-3 px-2">
+                    <div>
+                        <h3 class="text-xl font-black font-sport text-sky-900 flex items-center gap-2">
+                            <span>لعبة عداء الرشاقة الصغير</span> 🏃‍♀️
+                        </h3>
+                        <p class="text-xs text-slate-600 font-bold">تفادَ الأقماع البرتقالية واجمع النجوم الذهبية والتفاح المقوي!</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-sky-100 px-3.5 py-1.5 rounded-2xl border-2 border-sky-300">
+                        <div class="text-center">
+                            <span class="text-[10px] text-sky-800 font-bold block">النقاط</span>
+                            <span id="canvasScore" class="font-black text-sky-700 text-base font-sport">0</span>
+                        </div>
+                        <div class="h-6 w-0.5 bg-sky-300"></div>
+                        <div class="text-center">
+                            <span class="text-[10px] text-amber-800 font-bold block">النجوم</span>
+                            <span id="canvasStars" class="font-black text-amber-600 text-base font-sport">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Viewport -->
+                <div id="gameCanvasContainer" class="rounded-3xl overflow-hidden border-4 border-amber-300 shadow-lg relative bg-gradient-to-b from-sky-200 to-emerald-100">
+                    <canvas id="agilityCanvas" width="450" height="560" class="w-full h-full"></canvas>
+
+                    <!-- Interactive Overlay -->
+                    <div id="gameOverlay" class="absolute inset-0 bg-sky-950/75 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center text-white">
+                        <div class="text-6xl mb-2 animate-bounce">
+                            🏆
+                        </div>
+                        <h4 id="overlayTitle" class="text-2xl md:text-3xl font-black font-sport mb-2 text-amber-300">
+                            جاهز لتحدي الرشاقة؟
+                        </h4>
+                        <p id="overlayDesc" class="text-sm md:text-base font-bold text-sky-100 max-w-xs mb-5">
+                            استخدم أزرار اليمين واليسار للجري المتعرج، تجنب الأقماع واجمع 10 نجوم للفوز بوسام الرشاقة!
+                        </p>
+                        <button onclick="startGame()" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 text-slate-900 font-black text-lg shadow-lg hover:scale-105 active:scale-95 transition">
+                            <span>🚀 انطلق الآن يا بطل!</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Touch & Kid Buttons -->
+                <div class="mt-4 flex flex-col items-center gap-3">
+                    <div class="grid grid-cols-2 gap-4 w-full max-w-sm">
+                        <button id="btnMoveRight" class="py-4 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-500 active:from-sky-600 active:to-sky-700 text-white font-black text-xl shadow-md border-b-4 border-sky-600 transition flex items-center justify-center gap-2 select-none">
+                            <i class="fa-solid fa-arrow-right"></i>
+                            <span>يمين ➡️</span>
+                        </button>
+                        <button id="btnMoveLeft" class="py-4 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-500 active:from-sky-600 active:to-sky-700 text-white font-black text-xl shadow-md border-b-4 border-sky-600 transition flex items-center justify-center gap-2 select-none">
+                            <span>⬅️ يسار</span>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </div>
+                    <span class="text-xs text-slate-500 font-bold">يمكنك أيضاً استخدام الأسهم (⬅️ ➡️) على لوحة المفاتيح</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="quizTab" class="tab-content hidden">
+            <div class="kids-card p-6 md:p-8 mb-6 max-w-2xl mx-auto border-4 border-sky-400">
+                <div class="flex items-center justify-between mb-4 border-b-2 border-sky-200 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-3xl">🧠</span>
+                        <div>
+                            <h3 class="font-black text-sky-900 text-lg">تحدي أذكياء الرشاقة</h3>
+                            <p class="text-xs text-slate-500 font-bold">أجب لتكسب نجوم التميز والذكاء الرياضي!</p>
+                        </div>
+                    </div>
+                    <div class="bg-amber-100 px-3 py-1 rounded-xl border border-amber-300 font-bold text-amber-800 text-sm">
+                        السؤال: <span id="qIndexText">1</span> / 4
+                    </div>
+                </div>
+
+                <!-- Quiz Progress Bar -->
+                <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden mb-6">
+                    <div id="quizBar" class="h-full bg-gradient-to-r from-sky-400 to-amber-400 transition-all duration-300" style="width: 25%;"></div>
+                </div>
+
+                <!-- Question Body -->
+                <div id="quizQuestionBox">
+                    <div id="qBadge" class="inline-block bg-sky-100 text-sky-800 text-xs font-black px-3 py-1 rounded-full mb-2">
+                        معلومات الرشاقة
+                    </div>
+                    <h4 id="qTitle" class="text-lg md:text-xl font-black text-slate-800 mb-5 leading-relaxed">
+                        السؤال هنا...
+                    </h4>
+
+                    <!-- Answer Options -->
+                    <div id="qOptions" class="space-y-3">
+                        <!-- Options generated by JS -->
+                    </div>
+
+                    <!-- Instant Feedback Box -->
+                    <div id="quizNotice" class="hidden mt-4 p-4 rounded-2xl text-sm font-bold"></div>
+
+                    <!-- Next Question Button -->
+                    <div class="mt-6 flex justify-end">
+                        <button id="btnNextQ" onclick="nextQuizQuestion()" class="hidden px-6 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-base shadow-md transition">
+                            <span>السؤال التالي ⬅️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="classifyTab" class="tab-content hidden">
+            <div class="kids-card p-6 md:p-8 mb-6 max-w-3xl mx-auto border-4 border-amber-300">
+                <div class="text-center mb-5">
+                    <span class="text-4xl">📦✨</span>
+                    <h3 class="text-xl md:text-2xl font-black text-sky-900 mt-1">صندوق أبطال التصنيف السريع</h3>
+                    <p class="text-xs md:text-sm font-bold text-slate-600 mt-1">
+                        اقرأ الحركة في البطاقة بالأسفل، ثم اختر الصندوق الصحيح الذي تنتمي إليه:
+                    </p>
+                </div>
+
+                <!-- Active Card to Classify -->
+                <div id="classifyActiveCard" class="bg-gradient-to-r from-sky-500 to-sky-600 text-white p-5 rounded-3xl shadow-lg text-center mb-6 max-w-md mx-auto transform transition duration-300">
+                    <span id="classifyEmoji" class="text-5xl block mb-2">⚽</span>
+                    <h4 id="classifyCardTitle" class="text-lg font-black leading-snug">مراوغة المدافعين في كرة القدم</h4>
+                    <span class="inline-block mt-2 text-xs bg-white/20 px-3 py-0.5 rounded-full font-bold">إلى أي نوع تنتمي؟</span>
+                </div>
+
+                <!-- Drop Target Buttons (The Boxes) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="handleClassifyChoice('general')" class="p-4 rounded-3xl bg-emerald-50 hover:bg-emerald-100 border-3 border-emerald-400 text-emerald-950 font-black text-base transition flex items-center justify-center gap-3 shadow-md hover:scale-102">
+                        <span class="text-3xl">🤸‍♂️</span>
+                        <div class="text-right">
+                            <span class="block">صندوق: الرشاقة العامة</span>
+                            <span class="text-xs text-emerald-700 font-semibold">(حركات في مختلف الألعاب والأنشطة)</span>
+                        </div>
+                    </button>
+
+                    <button onclick="handleClassifyChoice('specific')" class="p-4 rounded-3xl bg-amber-50 hover:bg-amber-100 border-3 border-amber-400 text-amber-950 font-black text-base transition flex items-center justify-center gap-3 shadow-md hover:scale-102">
+                        <span class="text-3xl">🎯</span>
+                        <div class="text-right">
+                            <span class="block">صندوق: الرشاقة الخاصة</span>
+                            <span class="text-xs text-amber-700 font-semibold">(مهارة مخصصة لرياضة معينة)</span>
+                        </div>
+                    </button>
+                </div>
+
+                <div id="classifyFeedback" class="mt-4 text-center font-bold text-sm min-h-[28px]"></div>
+            </div>
+        </section>
+
+        <div id="certModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-3 hidden">
+            <div class="bg-white rounded-3xl p-6 md:p-8 max-w-xl w-full border-4 border-amber-400 shadow-2xl text-center relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-200 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="text-5xl mb-2 animate-bounce">
+                    🎖️🎉
+                </div>
+                <h3 class="text-2xl md:text-3xl font-black font-sport text-sky-900 mb-1">
+                    شهادة بطل / بطلة الرشاقة
+                </h3>
+                <p class="text-xs md:text-sm font-bold text-slate-500 mb-4">
+                    مادة التربية البدنية والدفاع عن النفس - الصف الرابع الابتدائي
+                </p>
+
+                <!-- Certificate Frame -->
+                <div class="border-4 border-dashed border-amber-300 bg-amber-50/60 p-4 rounded-2xl mb-4 text-right">
+                    <p class="text-sm font-bold text-slate-800 leading-relaxed mb-3">
+                        نبارك للبطل / البطلة الرائعة إتقان مفاهيم وتدريبات <strong class="text-sky-700">«الرشاقة وخفة الحركة»</strong> في الجري المتعرج والتوافق الحركي السليم بامتياز! 🌟
+                    </p>
+                    <div class="flex items-center justify-between text-xs font-black text-slate-600 bg-white p-2.5 rounded-xl border border-amber-200">
+                        <span>الدرجة: <strong class="text-emerald-600 text-sm">ممتاز ومبدع ⭐⭐⭐</strong></span>
+                        <span>إجمالي النجوم: <strong id="certPoints" class="text-amber-600 text-sm">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Student Name Input for Fun -->
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-700 mb-1 text-right">اكتب اسمك يا بطل لحفظ الشهادة:</label>
+                    <input type="text" id="studentNameInput" placeholder="اسم البطل / البطلة..." class="w-full text-center px-4 py-2 border-2 border-sky-300 rounded-xl text-slate-800 font-bold focus:outline-none focus:border-amber-400">
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="flex-1 py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm shadow transition">
+                        🖨️ طباعة الشهادة
+                    </button>
+                    <button onclick="closeCertModal()" class="flex-1 py-3 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-sm shadow transition">
+                        متابعة اللعب 🚀
+                    </button>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-200 text-center">
+                    <span class="text-[11px] font-bold text-sky-800">إعداد وتصميم: أ/ ام محمد سمية 🌷</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="mt-12 text-center text-slate-600 text-xs border-t-2 border-sky-200 pt-5 px-4">
+        <p class="font-extrabold text-sky-900 text-sm mb-1">
+            برنامج تنمية مهارات الرشاقة واللياقة البدنية - الصف الرابع الابتدائي 🌟
+        </p>
+        <p class="text-sky-700 font-bold">
+            إعداد المعلمة المتميزة: <span class="text-amber-600">ام محمد سمية</span>
+        </p>
+        <p class="text-[11px] text-slate-400 mt-1">
+            حركات صحية وجسم رشيق • جميع الحقوق محفوظة
+        </p>
+    </footer>
+
+    <script>
+        let audioCtx = null;
+        let isAudioMuted = false;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(freq, type, duration, gainVal = 0.15) {
+            if (isAudioMuted) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        const Sound = {
+            star: () => {
+                playSound(659.25, 'triangle', 0.1, 0.18); // E5
+                setTimeout(() => playSound(880, 'sine', 0.15, 0.18), 70); // A5
+            },
+            cheer: () => {
+                playSound(523.25, 'triangle', 0.15, 0.2);
+                setTimeout(() => playSound(659.25, 'triangle', 0.15, 0.2), 120);
+                setTimeout(() => playSound(783.99, 'triangle', 0.2, 0.2), 240);
+                setTimeout(() => playSound(1046.50, 'sine', 0.3, 0.25), 360);
+            },
+            bump: () => {
+                playSound(160, 'sawtooth', 0.2, 0.2);
+            },
+            click: () => {
+                playSound(440, 'sine', 0.08, 0.1);
+            }
+        };
+
+        function toggleAudio() {
+            isAudioMuted = !isAudioMuted;
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundText');
+            if (isAudioMuted) {
+                icon.className = 'fa-solid fa-volume-xmark text-red-500';
+                text.innerText = 'الصوت مكتوم';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-sky-700';
+                text.innerText = 'الصوت رائع';
+                Sound.star();
+            }
+        }
+
+        let totalStars = 0;
+        function gainStars(amt) {
+            totalStars += amt;
+            const label = document.getElementById('globalPoints');
+            if (label) label.innerText = totalStars;
+            label.classList.add('scale-125');
+            setTimeout(() => label.classList.remove('scale-125'), 300);
+        }
+
+        function switchTab(tabId) {
+            Sound.click();
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn-kid').forEach(btn => btn.classList.remove('active'));
+
+            const target = document.getElementById(tabId);
+            if (target) target.classList.remove('hidden');
+
+            if (tabId === 'introTab') document.getElementById('btnIntro').classList.add('active');
+            if (tabId === 'gameTab') {
+                document.getElementById('btnGame').classList.add('active');
+                resizeGameCanvas();
+            }
+            if (tabId === 'quizTab') document.getElementById('btnQuiz').classList.add('active');
+            if (tabId === 'classifyTab') document.getElementById('btnClassify').classList.add('active');
+        }
+
+        const canvas = document.getElementById('agilityCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('gameCanvasContainer');
+
+        let isRunning = false;
+        let animId = null;
+        let score = 0;
+        let starsCollected = 0;
+        let speed = 3.2;
+
+        let kidPlayer = {
+            x: 200,
+            y: 440,
+            w: 42,
+            h: 52,
+            speed: 7,
+            wiggle: 0
+        };
+
+        let moveRightActive = false;
+        let moveLeftActive = false;
+        let obstacles = [];
+        let collectibles = [];
+        let particles = [];
+        let gameTimer = 0;
+
+        function resizeGameCanvas() {
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.resetTransform();
+            ctx.scale(dpr, dpr);
+            kidPlayer.y = rect.height - 75;
+            kidPlayer.x = rect.width / 2 - kidPlayer.w / 2;
+        }
+        window.addEventListener('resize', resizeGameCanvas);
+
+        // Control buttons
+        const btnMoveR = document.getElementById('btnMoveRight');
+        const btnMoveL = document.getElementById('btnMoveLeft');
+
+        const setupTouchHold = (elem, isRight) => {
+            const press = (e) => {
+                e.preventDefault();
+                getAudioContext();
+                if (isRight) moveRightActive = true;
+                else moveLeftActive = true;
+            };
+            const release = (e) => {
+                e.preventDefault();
+                if (isRight) moveRightActive = false;
+                else moveLeftActive = false;
+            };
+            elem.addEventListener('mousedown', press);
+            elem.addEventListener('mouseup', release);
+            elem.addEventListener('touchstart', press, {passive: false});
+            elem.addEventListener('touchend', release, {passive: false});
+        };
+        setupTouchHold(btnMoveR, true);
+        setupTouchHold(btnMoveL, false);
+
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'KeyD') moveRightActive = true;
+            if (e.key === 'ArrowLeft' || e.key === 'KeyA') moveLeftActive = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'KeyD') moveRightActive = false;
+            if (e.key === 'ArrowLeft' || e.key === 'KeyA') moveLeftActive = false;
+        });
+
+        function startGame() {
+            getAudioContext();
+            resizeGameCanvas();
+            document.getElementById('gameOverlay').classList.add('hidden');
+            obstacles = [];
+            collectibles = [];
+            particles = [];
+            score = 0;
+            starsCollected = 0;
+            speed = 3.2;
+            gameTimer = 0;
+            isRunning = true;
+            updateGameHud();
+            cancelAnimationFrame(animId);
+            gameLoop();
+            Sound.star();
+        }
+
+        function updateGameHud() {
+            document.getElementById('canvasScore').innerText = score;
+            document.getElementById('canvasStars').innerText = starsCollected;
+        }
+
+        function stopGame(won) {
+            isRunning = false;
+            cancelAnimationFrame(animId);
+            const overlay = document.getElementById('gameOverlay');
+            const title = document.getElementById('overlayTitle');
+            const desc = document.getElementById('overlayDesc');
+
+            overlay.classList.remove('hidden');
+
+            if (won) {
+                Sound.cheer();
+                confetti({ particleCount: 80, spread: 70 });
+                title.innerText = "رائع يا بطل الرشاقة! 🌟";
+                desc.innerText = `جمعت ${starsCollected} نجوم وتفاديت كل الأقماع بخفة وتوافق مذهل!`;
+                gainStars(30);
+            } else {
+                Sound.bump();
+                title.innerText = "أوووبس! لمست القمع 🛑";
+                desc.innerText = `لا بأس يا بطل، الرشاقة تتطور مع المحاولة والتمرين! لنحاول مرة أخرى!`;
+                gainStars(5);
+            }
+        }
+
+        function gameLoop() {
+            if (!isRunning) return;
+
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+
+            // Clear Background with athletic field look
+            ctx.fillStyle = '#f0fdf4';
+            ctx.fillRect(0, 0, w, h);
+
+            // Zigzag track lines
+            ctx.strokeStyle = 'rgba(14, 165, 233, 0.2)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([12, 12]);
+            ctx.beginPath();
+            ctx.moveTo(w * 0.33, 0); ctx.lineTo(w * 0.33, h);
+            ctx.moveTo(w * 0.66, 0); ctx.lineTo(w * 0.66, h);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Move Kid Player (RTL context: Right key moves to the right of screen)
+            if (moveRightActive && kidPlayer.x < w - kidPlayer.w - 12) {
+                kidPlayer.x += kidPlayer.speed;
+            }
+            if (moveLeftActive && kidPlayer.x > 12) {
+                kidPlayer.x -= kidPlayer.speed;
+            }
+
+            // Spawn Cones (أقماع) & Stars/Apples
+            gameTimer++;
+            if (gameTimer % 45 === 0) {
+                const randX = Math.random() * (w - 70) + 35;
+                if (Math.random() > 0.4) {
+                    // Obstacle: Sports Cone
+                    obstacles.push({ x: randX, y: -40, radius: 18 });
+                } else {
+                    // Collectible: Star or Apple
+                    collectibles.push({
+                        x: randX,
+                        y: -30,
+                        type: Math.random() > 0.5 ? 'star' : 'apple',
+                        radius: 16
+                    });
+                }
+            }
+
+            // Render and update Collectibles
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                const it = collectibles[i];
+                it.y += speed;
+
+                ctx.font = '24px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(it.type === 'star' ? '⭐' : '🍎', it.x, it.y);
+
+                // Collision with player
+                const pMidX = kidPlayer.x + kidPlayer.w / 2;
+                const pMidY = kidPlayer.y + kidPlayer.h / 2;
+                if (Math.hypot(pMidX - it.x, pMidY - it.y) < it.radius + kidPlayer.w / 2.2) {
+                    Sound.star();
+                    collectibles.splice(i, 1);
+                    starsCollected++;
+                    score += 15;
+                    updateGameHud();
+                    if (starsCollected >= 10) {
+                        stopGame(true);
+                        return;
+                    }
+                    continue;
+                }
+
+                if (it.y > h + 40) collectibles.splice(i, 1);
+            }
+
+            // Render and update Obstacles (Cones)
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const ob = obstacles[i];
+                ob.y += speed;
+
+                // Draw training orange cone
+                ctx.fillStyle = '#f97316';
+                ctx.beginPath();
+                ctx.moveTo(ob.x, ob.y - 18);
+                ctx.lineTo(ob.x + 16, ob.y + 14);
+                ctx.lineTo(ob.x - 16, ob.y + 14);
+                ctx.closePath();
+                ctx.fill();
+
+                // Cone stripes
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(ob.x - 8, ob.y - 2, 16, 5);
+                ctx.fillStyle = '#c2410c';
+                ctx.fillRect(ob.x - 18, ob.y + 14, 36, 6); // Base
+
+                // Collision with player
+                const pMidX = kidPlayer.x + kidPlayer.w / 2;
+                const pMidY = kidPlayer.y + kidPlayer.h / 2;
+                if (Math.hypot(pMidX - ob.x, pMidY - ob.y) < ob.radius + kidPlayer.w / 2.5) {
+                    stopGame(false);
+                    return;
+                }
+
+                if (ob.y > h + 40) {
+                    obstacles.splice(i, 1);
+                    score += 5;
+                    updateGameHud();
+                }
+            }
+
+            // Render Kid Player Avatar (Cute Athletic Kid)
+            kidPlayer.wiggle += 0.2;
+            const bounce = Math.sin(kidPlayer.wiggle) * 4;
+
+            // Kid's body / Sports Shirt
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath();
+            ctx.roundRect(kidPlayer.x + 5, kidPlayer.y + 16 + bounce, kidPlayer.w - 10, 24, 8);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = '#fed7aa';
+            ctx.beginPath();
+            ctx.arc(kidPlayer.x + kidPlayer.w / 2, kidPlayer.y + 10 + bounce, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sports Headband
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(kidPlayer.x + kidPlayer.w / 2 - 12, kidPlayer.y + 3 + bounce, 24, 4);
+
+            // Smiling eyes
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(kidPlayer.x + kidPlayer.w / 2 - 4, kidPlayer.y + 9 + bounce, 1.5, 0, Math.PI * 2);
+            ctx.arc(kidPlayer.x + kidPlayer.w / 2 + 4, kidPlayer.y + 9 + bounce, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Legs running
+            ctx.strokeStyle = '#0284c7';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(kidPlayer.x + 12, kidPlayer.y + 40 + bounce);
+            ctx.lineTo(kidPlayer.x + 8 + Math.cos(kidPlayer.wiggle) * 8, kidPlayer.y + 54);
+            ctx.moveTo(kidPlayer.x + kidPlayer.w - 12, kidPlayer.y + 40 + bounce);
+            ctx.lineTo(kidPlayer.x + kidPlayer.w - 8 - Math.cos(kidPlayer.wiggle) * 8, kidPlayer.y + 54);
+            ctx.stroke();
+
+            animId = requestAnimationFrame(gameLoop);
+        }
+
+        const kidQuestions = [
+            {
+                badge: "مفهوم الرشاقة",
+                title: "ما هي الرشاقة في التربية البدنية ببساطة؟",
+                options: [
+                    "أن أنام طوال اليوم وأشاهد التلفاز فقط.",
+                    "خفة الحركة والقدرة على التوافق السريع لحركات الجسم.",
+                    "حمل أثقال حديدية ثقيلة جداً لا أستطيع رفعها."
+                ],
+                correct: 1,
+                cheer: "أحسنت يا بطل! الرشاقة هي خفة الحركة وسرعة التوافق في مختلف الألعاب."
+            },
+            {
+                badge: "أنواع الرشاقة",
+                title: "مراوغة المدافعين في كرة القدم أو كرة السلة هي مثال على:",
+                options: [
+                    "الرشاقة الخاصة (مهارة مخصصة لرياضة محددة)",
+                    "الرشاقة العامة (حركات عادية في كل مكان)",
+                    "الكسل والخمول"
+                ],
+                correct: 0,
+                cheer: "رائع جداً! لأنها خاصة بمهارة رياضة محددة تمارسها."
+            },
+            {
+                badge: "ماذا يضر رشاقتي؟",
+                title: "أي من هذه الأشياء يُقلل من رشاقتنا ويجعل حركتنا بطيئة وثقيلة؟",
+                options: [
+                    "شرب الماء والأكل الصحي المنوع.",
+                    "الوزن الزائد والتعب والسهر الطويل.",
+                    "ممارسة تمارين الجري المتعرج."
+                ],
+                correct: 1,
+                cheer: "إجابة ذكية! الوزن الزائد والسهر والتعب تضعف من سرعة وخفة حركتنا."
+            },
+            {
+                badge: "تمرينات الرشاقة",
+                title: "من تمارين تنمية الرشاقة التي تعلمناها في حصة البدنية:",
+                options: [
+                    "الجري المتعرج بين الأقماع وتغيير الاتجاه السريع.",
+                    "الجلوس على الكرسي دون أي حركة.",
+                    "تناول رقائق الشيبس والحلويات بكثرة."
+                ],
+                correct: 0,
+                cheer: "ممتاز وبطل! الجري المتعرج وتغيير الاتجاه يمنحك سرعة ورشاقة رائعة!"
+            }
+        ];
+
+        let qIndex = 0;
+
+        function renderQuestion() {
+            const q = kidQuestions[qIndex];
+            document.getElementById('qIndexText').innerText = qIndex + 1;
+            document.getElementById('quizBar').style.width = `${((qIndex + 1) / kidQuestions.length) * 100}%`;
+            document.getElementById('qBadge').innerText = q.badge;
+            document.getElementById('qTitle').innerText = q.title;
+
+            const optBox = document.getElementById('qOptions');
+            optBox.innerHTML = '';
+
+            const notice = document.getElementById('quizNotice');
+            notice.classList.add('hidden');
+            document.getElementById('btnNextQ').classList.add('hidden');
+
+            q.options.forEach((optText, i) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-right p-4 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 text-slate-800 font-bold text-sm md:text-base transition shadow-sm flex items-center justify-between";
+                btn.innerHTML = `
+                    <span>${optText}</span>
+                    <span class="w-7 h-7 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-black">${i + 1}</span>
+                `;
+                btn.onclick = () => selectQuizAnswer(i, btn);
+                optBox.appendChild(btn);
+            });
+        }
+
+        function selectQuizAnswer(chosen, btnElem) {
+            getAudioContext();
+            const q = kidQuestions[qIndex];
+            const allBtns = document.querySelectorAll('#qOptions button');
+            allBtns.forEach(b => b.disabled = true);
+
+            const notice = document.getElementById('quizNotice');
+            notice.classList.remove('hidden');
+
+            if (chosen === q.correct) {
+                Sound.cheer();
+                btnElem.classList.remove('bg-white', 'border-sky-200');
+                btnElem.classList.add('bg-emerald-100', 'border-emerald-400', 'text-emerald-950');
+
+                notice.className = "mt-4 p-4 rounded-2xl bg-emerald-100 border-2 border-emerald-300 text-emerald-900 text-sm font-bold";
+                notice.innerHTML = `🌟 <strong>إجابة صحيحة ومبدعة!</strong> ${q.cheer}`;
+                gainStars(20);
+            } else {
+                Sound.bump();
+                btnElem.classList.remove('bg-white', 'border-sky-200');
+                btnElem.classList.add('bg-rose-100', 'border-rose-400', 'text-rose-950');
+
+                const correctBtn = allBtns[q.correct];
+                correctBtn.classList.add('bg-emerald-100', 'border-emerald-400');
+
+                notice.className = "mt-4 p-4 rounded-2xl bg-amber-100 border-2 border-amber-300 text-amber-900 text-sm font-bold";
+                notice.innerHTML = `💡 <strong>فكر جيداً يا بطل:</strong> الإجابة الصحيحة هي: (${q.options[q.correct]}).`;
+            }
+
+            document.getElementById('btnNextQ').classList.remove('hidden');
+        }
+
+        function nextQuizQuestion() {
+            qIndex++;
+            if (qIndex < kidQuestions.length) {
+                renderQuestion();
+            } else {
+                showCertificate();
+            }
+        }
+
+        function showCertificate() {
+            confetti({ particleCount: 100, spread: 80 });
+            document.getElementById('certPoints').innerText = totalStars;
+            document.getElementById('certModal').classList.remove('hidden');
+        }
+
+        function closeCertModal() {
+            document.getElementById('certModal').classList.add('hidden');
+        }
+
+        const classifyItems = [
+            { text: "مراوغة حارس المرمى لتسجيل هدف كرة قدم", type: "specific", emoji: "⚽" },
+            { text: "القفز فوق الحواجز الخشبية في الساحة المدرسية", type: "general", emoji: "🤸‍♂️" },
+            { text: "مراوغة كرة السلة وتغيير اليد بسرعة لتجاوز الخصم", type: "specific", emoji: "🏀" },
+            { text: "الجري المتعرج بين أقماع التدريب في درس البدنية", type: "general", emoji: "🏃" },
+            { text: "حركات الجمباز الرشيقة والالتفاف على البساط", type: "specific", emoji: "🤸‍♀️" }
+        ];
+
+        let currentClassifyIdx = 0;
+
+        function loadCurrentClassifyCard() {
+            const item = classifyItems[currentClassifyIdx];
+            document.getElementById('classifyEmoji').innerText = item.emoji;
+            document.getElementById('classifyCardTitle').innerText = item.text;
+            document.getElementById('classifyFeedback').innerText = '';
+        }
+
+        function handleClassifyChoice(chosenType) {
+            getAudioContext();
+            const item = classifyItems[currentClassifyIdx];
+            const feedback = document.getElementById('classifyFeedback');
+
+            if (chosenType === item.type) {
+                Sound.star();
+                feedback.className = "mt-4 text-center font-bold text-sm text-emerald-700";
+                feedback.innerText = "🎉 بطل متميز! وضعْتَ البطاقة في الصندوق الصحيح (+15 نجمة)!";
+                gainStars(15);
+            } else {
+                Sound.bump();
+                feedback.className = "mt-4 text-center font-bold text-sm text-rose-700";
+                feedback.innerText = "ركّز يا بطل! هذه الحركة تناسب الصندوق الآخر، هيا نتعلم معاً!";
+            }
+
+            currentClassifyIdx = (currentClassifyIdx + 1) % classifyItems.length;
+            setTimeout(loadCurrentClassifyCard, 900);
+        }
+
+        // Initialize application
+        window.addEventListener('load', () => {
+            renderQuestion();
+            loadCurrentClassifyCard();
+            resizeGameCanvas();
+        });
+    </script>
+</body>
+</html>
